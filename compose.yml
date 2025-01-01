@@ -1,0 +1,57 @@
+services:
+  nginx:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - ./pages:/usr/share/nginx/html
+      - ./logs:/var/log/nginx
+      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - php
+    networks:
+      - tor_network
+
+  php:
+    image: php:fpm
+    container_name: php
+    volumes:
+      - ./pages:/usr/share/nginx/html
+    depends_on:
+      - postgres
+    networks:
+      - tor_network
+
+  tor:
+    container_name: tor
+    build: .
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    stop_grace_period: 1m
+    networks:
+      - tor_network
+
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: eno1wlp3s0#497$
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tor_network
+    ports:
+      - "5432:5432"
+
+networks:
+  tor_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
